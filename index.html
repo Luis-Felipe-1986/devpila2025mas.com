@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev</>PILA - Registro de Asistencia</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #0d1b2a 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+
+        .banner {
+            width: 100%;
+            background: #0d1b2a;
+            padding: 20px;
+            text-align: center;
+            color: #00ffcc;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+            animation: neonGlow 1.5s infinite alternate;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        @keyframes neonGlow {
+            from { box-shadow: 0 0 15px rgba(0, 255, 204, 0.5); }
+            to { box-shadow: 0 0 25px rgba(0, 255, 204, 0.8); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #00ffcc;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+            animation: fadeIn 1.5s ease-in;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+            animation: bounceIn 1s ease-out;
+            font-size: 28px;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            60% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        .form-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 220px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-5px);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+            outline: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 25px;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        button:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        button:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+            border-color: #00ffcc;
+        }
+
+        #saveBtn { background: #2ecc71; }
+        #deleteBtn { background: #e74c3c; }
+        #exitBtn { background: #3498db; }
+
+        #participantsList {
+            margin-top: 0;
+            color: #e0e0e0;
+            padding: 15px;
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 10px;
+            border: 1px solid #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+
+        .category-section {
+            margin-bottom: 15px;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        #participantsList h3 {
+            margin: 0 0 5px 0;
+            color: #00ffcc;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
+            font-size: 18px;
+            padding-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #participantsList .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        #participantsList .participants-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+            transition: background 0.3s ease;
+            cursor: pointer;
+        }
+
+        #participantsList .participants-table td:hover {
+            background: rgba(0, 255, 204, 0.2);
+        }
+
+        #participantsList .participants-table td.selected {
+            background: rgba(0, 255, 204, 0.4);
+        }
+
+        #participantsList .participants-table td:last-child {
+            text-align: center;
+        }
+
+        #participantsList .select-checkbox {
+            transform: scale(1.2);
+            accent-color: #00ffcc;
+            margin-right: 5px;
+        }
+
+        #participantsList input[type="checkbox"]:disabled {
+            opacity: 0.7;
+        }
+
+        #chartContainer, #triviaChartContainer {
+            margin-top: 0;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            border-radius: 10px;
+            border: 1px solid #00ffcc;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            animation: slideUp 1s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .category-gray { color: #808080; }
+        .category-navy { color: #001f3f; }
+        .category-red { color: #ff0000; }
+        .category-green { color: #00ff00; }
+
+        .modal, .trivia-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            animation: fadeInModal 0.5s ease;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content, .trivia-modal-content {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+            max-width: 80%;
+            transform: scale(0.8);
+            animation: popIn 0.5s ease forwards;
+        }
+
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+
+        .modal-content h2, .trivia-modal-content h2 {
+            font-size: 48px;
+            margin: 0;
+            color: #00ffcc;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
+        }
+
+        .modal-content p {
+            font-size: 32px;
+            margin: 20px 0 0;
+            color: #e0e0e0;
+            text-transform: uppercase;
+        }
+
+        .trivia-modal-content p {
+            font-size: 32px;
+            margin: 20px 0;
+            color: #e0e0e0;
+        }
+
+        .trivia-modal-content input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 20px 0;
+            border: 1px solid #00ffcc;
+            border-radius: 5px;
+            background: rgba(50, 50, 50, 0.8);
+            color: #e0e0e0;
+            font-size: 16px;
+        }
+
+        .modal-close, .trivia-modal-close {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover, .trivia-modal-close:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        Instituto Técnico "Cleofas C. Caballero"<br>
+        Instituto "Marco Aurelio Soto"<br>
+        Dev</>PILA 2025
+    </div>
+
+    <div class="container">
+        <h1>Dev</>PILA - Registro de Asistencia</h1>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label>Nombre del Participante:</label>
+                <input type="text" id="name" placeholder="Ingrese nombre completo">
+            </div>
+
+            <div class="form-group">
+                <label>Categoría:</label>
+                <select id="category">
+                    <option value="robotics" class="category-gray">Plataformas y Simuladores de Robótica</option>
+                    <option value="3dprint" class="category-navy">Impresión 3D</option>
+                    <option value="lego" class="category-red">Lego Educativo</option>
+                    <option value="arduino" class="category-green">Arduino</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Horario:</label>
+                <select id="schedule">
+                    <option value="8:00-9:30">8:00 am - 9:30 am</option>
+                    <option value="9:30-11:00">9:30 am - 11:00 am</option>
+                    <option value="11:00-12:30">11:00 am - 12:30 pm</option>
+                    <option value="12:30-15:00">12:30 pm - 3:00 pm</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="saveBtn">Guardar</button>
+            <button id="deleteBtn">Eliminar</button>
+            <button id="exitBtn">Salir</button>
+        </div>
+
+        <div id="participantsList"></div>
+        <div id="chartContainer">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+        <div id="triviaChartContainer">
+            <canvas id="triviaChart"></canvas>
+        </div>
+    </div>
+
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalName"></h2>
+            <p id="modalCategory"></p>
+            <button class="modal-close" onclick="closeModal('welcomeModal')">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="triviaModal" class="trivia-modal">
+        <div class="trivia-modal-content">
+            <h2>PREGUNTA TECNOLÓGICA</h2>
+            <p id="triviaQuestion"></p>
+            <input type="text" id="triviaAnswer" placeholder="Tu respuesta">
+            <button class="trivia-modal-close" onclick="submitTriviaAnswer()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        let participants = JSON.parse(localStorage.getItem('participants')) || [];
+        let currentParticipant = null;
+        let selectedIndices = []; // Para rastrear múltiples participantes seleccionados
+
+        const techQuestions = [
+            // Robótica
+            { question: "¿Qué componente mueve un robot?", answer: "Motor" },
+            { question: "¿Qué hace un sensor en robótica?", answer: "Detecta el entorno" },
+            { question: "¿Qué mide un sensor de ultrasonido?", answer: "Distancia" },
+            { question: "¿Qué es un servo en robótica?", answer: "Un motor con control de posición" },
+            { question: "¿Qué tipo de robot es famoso por aspirar?", answer: "Roomba" },
+            // Informática
+            { question: "¿Qué significa 'RAM' en una computadora?", answer: "Memoria de Acceso Aleatorio" },
+            { question: "¿Qué es un bit en informática?", answer: "Un dígito binario" },
+            { question: "¿Qué significa 'IP' en redes?", answer: "Protocolo de Internet" },
+            { question: "¿Qué guarda los datos en una PC cuando se apaga?", answer: "Disco duro" },
+            { question: "¿Qué es el 'SO' de una computadora?", answer: "Sistema Operativo" },
+            // Redes Sociales
+            { question: "¿Qué red social usa un pájaro azul como logo?", answer: "Twitter" },
+            { question: "¿En qué año se creó Facebook?", answer: "2004" },
+            { question: "¿Qué app es famosa por videos cortos?", answer: "TikTok" },
+            { question: "¿Qué red social usa un fantasma como logo?", answer: "Snapchat" },
+            { question: "¿Quién fundó Instagram?", answer: "Kevin Systrom" }
+        ];
+
+        const chartColors = {
+            robotics: '#808080',
+            '3dprint': '#001f3f',
+            lego: '#ff0000',
+            arduino: '#00ff00'
+        };
+
+        const chartIcons = {
+            robotics: '🤖',
+            '3dprint': '🖨️',
+            lego: '🧱',
+            arduino: '🔌'
+        };
+
+        const attendanceChart = new Chart(document.getElementById('attendanceChart'), {
+            type: 'pie',
+            data: {
+                labels: [
+                    `${chartIcons.robotics} Robótica`,
+                    `${chartIcons['3dprint']} Impresión 3D`,
+                    `${chartIcons.lego} Lego`,
+                    `${chartIcons.arduino} Arduino`
+                ],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: Object.values(chartColors),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        position: 'top',
+                        labels: { color: '#e0e0e0', font: { size: 16 } }
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Asistencia por Categoría', 
+                        color: '#00ffcc',
+                        font: { size: 18 }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: 'bold' },
+                        formatter: (value) => value > 0 ? value : ''
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        const triviaChart = new Chart(document.getElementById('triviaChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Respondieron', 'No Respondieron'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#2ecc71', '#e74c3c'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { 
+                        position: 'top',
+                        labels: { color: '#e0e0e0', font: { size: 16 } }
+                    },
+                    title: { 
+                        display: true, 
+                        text: 'Respuestas a Trivia Tecnológica', 
+                        color: '#00ffcc',
+                        font: { size: 18 }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { size: 16, weight: 'bold' },
+                        formatter: (value, context) => {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? (value / total * 100).toFixed(1) : 0;
+                            return value > 0 ? `${percentage}%` : '';
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        function updateAttendanceChart() {
+            const counts = participants.reduce((acc, p) => {
+                acc[p.category] = (acc[p.category] || 0) + 1;
+                return acc;
+            }, {});
+            attendanceChart.data.datasets[0].data = [
+                counts.robotics || 0,
+                counts['3dprint'] || 0,
+                counts.lego || 0,
+                counts.arduino || 0
+            ];
+            attendanceChart.update();
+        }
+
+        function updateTriviaChart() {
+            const answered = participants.filter(p => p.answered).length;
+            const notAnswered = participants.length - answered;
+            triviaChart.data.datasets[0].data = [answered, notAnswered];
+            triviaChart.update();
+        }
+
+        function updateParticipantsList() {
+            const list = document.getElementById('participantsList');
+            const grouped = {
+                robotics: [],
+                '3dprint': [],
+                lego: [],
+                arduino: []
+            };
+
+            participants.forEach((p, index) => {
+                grouped[p.category].push({ 
+                    text: `${p.name} - ${p.schedule}`, 
+                    answered: p.answered || false,
+                    index: index
+                });
+            });
+
+            let html = '';
+            const categoriesOrder = ['robotics', '3dprint', 'lego', 'arduino'];
+            categoriesOrder.forEach(category => {
+                if (grouped[category].length > 0) {
+                    grouped[category].sort((a, b) => a.text.localeCompare(b.text));
+                    html += '<div class="category-section">';
+                    html += `<h3>${chartIcons[category]} ${getCategoryName(category)}</h3>`;
+                    html += '<table class="participants-table">';
+                    grouped[category].forEach(p => {
+                        html += `<tr><td>${p.text}</td><td><input type="checkbox" ${p.answered ? 'checked' : ''} disabled></td><td><input type="checkbox" class="select-checkbox" ${selectedIndices.includes(p.index) ? 'checked' : ''} onchange="toggleSelection(${p.index}, this.checked)"></td></tr>`;
+                    });
+                    html += '</table></div>';
+                }
+            });
+
+            list.innerHTML = html || '<p>No hay participantes registrados.</p>';
+            updateAttendanceChart();
+            updateTriviaChart();
+        }
+
+        function toggleSelection(index, checked) {
+            if (checked) {
+                selectedIndices.push(index);
+            } else {
+                selectedIndices = selectedIndices.filter(i => i !== index);
+            }
+            // Actualizar visualmente las filas
+            const rows = document.querySelectorAll('#participantsList .participants-table tr');
+            selectedIndices.forEach(idx => {
+                rows[idx].classList.add('selected');
+            });
+            rows.forEach((row, idx) => {
+                if (!selectedIndices.includes(idx)) {
+                    row.classList.remove('selected');
+                }
+            });
+        }
+
+        function getRandomQuestion() {
+            const randomIndex = Math.floor(Math.random() * techQuestions.length);
+            return techQuestions[randomIndex];
+        }
+
+        function getCategoryName(category) {
+            switch(category) {
+                case 'robotics': return 'Plataformas y Simuladores de Robótica';
+                case '3dprint': return 'Impresión 3D';
+                case 'lego': return 'Lego Educativo';
+                case 'arduino': return 'Arduino';
+            }
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const name = document.getElementById('name').value;
+            const category = document.getElementById('category').value;
+            const schedule = document.getElementById('schedule').value;
+            
+            if (name) {
+                currentParticipant = { name, category, schedule };
+                const question = getRandomQuestion();
+                showTriviaModal(question);
+            } else {
+                alert('Por favor, ingrese un nombre.');
+            }
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            if (selectedIndices.length > 0) {
+                if (confirm('¿Seguro que desea eliminar los participantes seleccionados?')) {
+                    selectedIndices.sort((a, b) => b - a); // Ordenar de mayor a menor para evitar problemas al eliminar
+                    selectedIndices.forEach(index => {
+                        participants.splice(index, 1);
+                    });
+                    localStorage.setItem('participants', JSON.stringify(participants));
+                    selectedIndices = []; // Resetear selecciones
+                    updateParticipantsList();
+                }
+            } else {
+                alert('Por favor, seleccione al menos un participante para eliminar.');
+            }
+        });
+
+        document.getElementById('exitBtn').addEventListener('click', () => {
+            if (confirm('¿Seguro que desea salir?')) {
+                window.close();
+            }
+        });
+
+        function showTriviaModal(question) {
+            const modal = document.getElementById('triviaModal');
+            const questionElement = document.getElementById('triviaQuestion');
+            questionElement.textContent = question.question;
+            document.getElementById('triviaAnswer').value = '';
+            modal.style.display = 'flex';
+            currentParticipant.question = question;
+        }
+
+        function submitTriviaAnswer() {
+            const answer = document.getElementById('triviaAnswer').value;
+            const answered = answer && answer.trim().toLowerCase() === currentParticipant.question.answer.toLowerCase();
+            currentParticipant.answered = answered;
+            participants.push(currentParticipant);
+            localStorage.setItem('participants', JSON.stringify(participants));
+            updateParticipantsList();
+            closeModal('triviaModal');
+            showWelcomeModal(currentParticipant.name, getCategoryName(currentParticipant.category), answered);
+            clearForm();
+            currentParticipant = null;
+        }
+
+        function clearForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('category').value = 'robotics';
+            document.getElementById('schedule').value = '8:00-9:30';
+        }
+
+        function showWelcomeModal(name, category, answered) {
+            const modal = document.getElementById('welcomeModal');
+            const modalName = document.getElementById('modalName');
+            const modalCategory = document.getElementById('modalCategory');
+            
+            modalName.textContent = `BIENVENIDO ${name.toUpperCase()}`;
+            modalCategory.textContent = `AL CURSO DE: ${category.toUpperCase()}${answered ? ' - ¡Respuesta correcta!' : ''}`;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        updateParticipantsList();
+    </script>
+</body>
+</html>
